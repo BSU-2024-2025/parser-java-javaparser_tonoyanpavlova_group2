@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Code Executor</title>
+</head>
+<body>
+<h1>Введите код для выполнения</h1>
+<textarea id="code" rows="10" cols="50"></textarea><br>
+<label for="fileName">Имя файла для сохранения:</label>
+<input type="text" id="fileName"><br>
+<button onclick="executeCode()">Запустить</button>
+<button onclick="saveCode()">Сохранить</button>
+<h2>Сохранённые программы:</h2>
+<ul id="savedCodes"></ul>
+
+<pre id="output"></pre>
+
+<script>
+    // Выполнение кода
+    async function executeCode() {
+        const code = document.getElementById("code").value;
+        try {
+            const response = await fetch("/api/execute", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "text/plain"
+                },
+                body: code
+            });
+            const result = await response.text();
+            document.getElementById("output").innerText = result;
+        } catch (error) {
+            console.error("Ошибка:", error);
+            document.getElementById("output").innerText = "Ошибка соединения";
+        }
+    }
+
+    // Сохранение кода
+    async function saveCode() {
+        const code = document.getElementById("code").value;
+        const fileName = document.getElementById("fileName").value;
+        try {
+            const response = await fetch("/api/save", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ code, fileName })
+            });
+            const result = await response.text();
+            document.getElementById("output").innerText = result;
+            loadSavedCodes();  // Обновить список сохранённых кодов
+        } catch (error) {
+            console.error("Ошибка:", error);
+            document.getElementById("output").innerText = "Ошибка соединения";
+        }
+    }
+
+    // Получение и отображение списка сохранённых кодов
+    async function loadSavedCodes() {
+        const response = await fetch("/api/codes");
+        const savedCodes = await response.json();
+        const codeList = document.getElementById("savedCodes");
+        codeList.innerHTML = "";
+        savedCodes.forEach(code => {
+            const li = document.createElement("li");
+            li.innerHTML = `<a href="#" onclick="executeSavedCode('${code}')">${code}</a>`;
+            codeList.appendChild(li);
+        });
+    }
+
+    // Выполнение сохранённого кода
+    async function executeSavedCode(fileName) {
+        const response = await fetch(`/api/execute/${fileName}`);
+        const result = await response.text();
+        document.getElementById("output").innerText = result;
+    }
+
+    // Загрузка списка сохранённых кодов при загрузке страницы
+    window.onload = loadSavedCodes;
+</script>
+</body>
+</html>
