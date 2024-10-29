@@ -3,6 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <title>Code Executor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            padding: 20px;
+            max-width: 800px;
+            margin: auto;
+        }
+        h1, h2 {
+            color: #4a90e2;
+        }
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+        button {
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin: 5px 0;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #357ABD;
+        }
+        #savedCodes {
+            list-style: none;
+            padding: 0;
+        }
+        #savedCodes li {
+            background: #fff;
+            border: 1px solid #ddd;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #savedCodes button {
+            margin-left: 5px;
+            padding: 5px 10px;
+            font-size: 0.9em;
+        }
+        #output, #codeContent {
+            background-color: #222;
+            color: #eee;
+            padding: 15px;
+            border-radius: 5px;
+            overflow: auto;
+            white-space: pre-wrap;
+            font-family: monospace;
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
 <h1>Введите код для выполнения</h1>
@@ -11,9 +75,14 @@
 <input type="text" id="fileName"><br>
 <button onclick="executeCode()">Запустить</button>
 <button onclick="saveCode()">Сохранить</button>
+
 <h2>Сохранённые программы:</h2>
 <ul id="savedCodes"></ul>
 
+<h2>Просмотр программы: <span id="selectedFileName"></span></h2>
+<pre id="codeContent"></pre>
+
+<h2>Вывод:</h2>
 <pre id="output"></pre>
 
 <script>
@@ -63,11 +132,37 @@
         const savedCodes = await response.json();
         const codeList = document.getElementById("savedCodes");
         codeList.innerHTML = "";
-        savedCodes.forEach(code => {
+        savedCodes.forEach(fileName => {
             const li = document.createElement("li");
-            li.innerHTML = `<a href="#" onclick="executeSavedCode('${code}')">${code}</a>`;
+            li.innerHTML = `
+                    <strong>${fileName}</strong>
+                    <button onclick="viewCode('${fileName}')">Просмотр</button>
+                    <button onclick="executeSavedCode('${fileName}')">Запуск</button>
+                    <button onclick="deleteCode('${fileName}')">Удалить</button>
+                `;
             codeList.appendChild(li);
         });
+    }
+
+    // Просмотр содержимого сохранённого кода
+    async function viewCode(fileName) {
+        const response = await fetch(`/api/code/${fileName}`);
+        const codeContent = await response.text();
+        document.getElementById("codeContent").textContent = codeContent;
+        document.getElementById("selectedFileName").textContent = fileName;
+    }
+
+    // Удаление сохранённого кода
+    async function deleteCode(fileName) {
+        const confirmed = confirm(`Вы уверены, что хотите удалить ${fileName}?`);
+        if (!confirmed) return;
+
+        const response = await fetch(`/api/code/${fileName}`, { method: "DELETE" });
+        const result = await response.text();
+        alert(result);
+        loadSavedCodes();
+        document.getElementById("codeContent").textContent = '';
+        document.getElementById("selectedFileName").textContent = '';
     }
 
     // Выполнение сохранённого кода

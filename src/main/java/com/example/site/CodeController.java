@@ -67,6 +67,36 @@ public class CodeController {
         return codeFiles;
     }
 
+    @GetMapping("/code/{fileName}")
+    public String getSavedCode(@PathVariable String fileName) {
+        File file = new File(CODE_STORAGE_DIR, fileName + ".java");
+        if (!file.exists()) {
+            return "Error: Code with name " + fileName + " not found.";
+        }
+
+        try {
+            return new String(Files.readAllBytes(file.toPath()));
+        } catch (IOException e) {
+            logger.error("Error reading saved code file", e);
+            return "Error reading file: " + e.getMessage();
+        }
+    }
+
+    @DeleteMapping("/code/{fileName}")
+    public String deleteSavedCode(@PathVariable String fileName) {
+        File file = new File(CODE_STORAGE_DIR, fileName + ".java");
+        if (!file.exists()) {
+            return "Error: Code with name " + fileName + " not found.";
+        }
+
+        if (file.delete()) {
+            logger.info("Code deleted: " + fileName);
+            return "Code " + fileName + " deleted successfully.";
+        } else {
+            return "Error deleting code: Unable to delete file.";
+        }
+    }
+
     @GetMapping("/execute/{fileName}")
     public String executeSavedCode(@PathVariable String fileName) {
         File file = new File(CODE_STORAGE_DIR, fileName + ".java");
@@ -78,7 +108,6 @@ public class CodeController {
             String code = new String(Files.readAllBytes(file.toPath()));
             logger.info("Executing saved code: " + code);
 
-            // Wrap expression in println if necessary
             if (isExpression(code)) {
                 code = "System.out.println(" + code + ");";
             }
@@ -91,7 +120,6 @@ public class CodeController {
     }
 
     private boolean isExpression(String code) {
-        // Check if code is likely an expression rather than a full class or method
         return !code.contains("class") && !code.contains(";") && !code.trim().startsWith("public");
     }
 
