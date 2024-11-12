@@ -18,6 +18,7 @@ public class CodeController {
 
     private static final Logger logger = LoggerFactory.getLogger(CodeController.class);
     private static final String CODE_STORAGE_DIR = "saved_codes";
+    private static final Map<String, Integer> variables = new HashMap<>();
 
     public CodeController() {
         File storageDir = new File(CODE_STORAGE_DIR);
@@ -26,13 +27,48 @@ public class CodeController {
         }
     }
 
+
     @PostMapping("/execute")
     public String executeCode(@RequestBody String code) {
         logger.info("Received code to execute: " + code);
-        if (isExpression(code)) {
-            return compileAndRunJavaCode("System.out.println(" + code + ");", false);
+
+        // Сначала обработаем выражения с переменными
+        String[] statements = code.split(";");
+        StringBuilder output = new StringBuilder();
+
+        for (String statement : statements) {
+            statement = statement.trim();
+            if (statement.contains("=")) {
+                // Парсинг выражений вида "x=1+8"
+                String[] parts = statement.split("=");
+                String varName = parts[0].trim();
+                String expression = parts[1].trim();
+                int result = evaluateExpression(expression);
+                variables.put(varName, result);
+                output.append(varName).append(" = ").append(result).append("\n");
+            } else {
+                // Для простого выражения, вычисляем и выводим результат
+                int result = evaluateExpression(statement);
+                output.append(result).append("\n");
+            }
         }
-        return compileAndRunJavaCode(code, code.contains("class"));
+
+        return output.toString();
+    }
+    private int evaluateExpression(String expression) {
+        // Подстановка значений переменных в выражение
+        for (Map.Entry<String, Integer> entry : variables.entrySet()) {
+            expression = expression.replace(entry.getKey(), entry.getValue().toString());
+        }
+
+        // Вычисление выражения (здесь можно использовать сторонние библиотеки, например, JEXL или ScriptEngine)
+        // Для простоты сейчас допустим, что выражения имеют только "+" и целые числа
+        String[] terms = expression.split("\\+");
+        int result = 0;
+        for (String term : terms) {
+            result += Integer.parseInt(term.trim());
+        }
+        return result;
     }
 
     @PostMapping("/save")
