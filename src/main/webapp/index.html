@@ -56,7 +56,7 @@
             padding: 5px 10px;
             font-size: 0.9em;
         }
-        #output, #codeContent {
+        #output {
             background-color: #222;
             color: #eee;
             padding: 15px;
@@ -70,7 +70,7 @@
 </head>
 <body>
 <h1>Введите код для выполнения</h1>
-<textarea id="code" rows="10" cols="50"></textarea><br>
+<label for="code"></label><textarea id="code" rows="10" cols="50"></textarea><br>
 <label for="fileName">Имя файла для сохранения:</label>
 <input type="text" id="fileName"><br>
 <button onclick="executeCode()">Запустить</button>
@@ -78,9 +78,6 @@
 
 <h2>Сохранённые программы:</h2>
 <ul id="savedCodes"></ul>
-
-<h2>Просмотр программы: <span id="selectedFileName"></span></h2>
-<pre id="codeContent"></pre>
 
 <h2>Вывод:</h2>
 <pre id="output"></pre>
@@ -97,8 +94,7 @@
                 },
                 body: code
             });
-            const result = await response.text();
-            document.getElementById("output").innerText = result;
+            document.getElementById("output").innerText = await response.text();
         } catch (error) {
             console.error("Ошибка:", error);
             document.getElementById("output").innerText = "Ошибка соединения";
@@ -117,9 +113,8 @@
                 },
                 body: JSON.stringify({ code, fileName })
             });
-            const result = await response.text();
-            document.getElementById("output").innerText = result;
-            loadSavedCodes();  // Обновить список сохранённых кодов
+            document.getElementById("output").innerText = await response.text();
+            await loadSavedCodes();  // Обновить список сохранённых кодов
         } catch (error) {
             console.error("Ошибка:", error);
             document.getElementById("output").innerText = "Ошибка соединения";
@@ -135,11 +130,10 @@
         savedCodes.forEach(fileName => {
             const li = document.createElement("li");
             li.innerHTML = `
-                    <strong>${fileName}</strong>
-                    <button onclick="viewCode('${fileName}')">Просмотр</button>
-                    <button onclick="executeSavedCode('${fileName}')">Запуск</button>
-                    <button onclick="deleteCode('${fileName}')">Удалить</button>
-                `;
+                <strong>${fileName}</strong>
+                <button onclick="viewCode('${fileName}')">Просмотр</button>
+                <button onclick="deleteCode('${fileName}')">Удалить</button>
+            `;
             codeList.appendChild(li);
         });
     }
@@ -147,29 +141,16 @@
     // Просмотр содержимого сохранённого кода
     async function viewCode(fileName) {
         const response = await fetch(`/api/code/${fileName}`);
-        const codeContent = await response.text();
-        document.getElementById("codeContent").textContent = codeContent;
-        document.getElementById("selectedFileName").textContent = fileName;
+        document.getElementById("code").value = await response.text(); // Выводим код в текстовое поле
     }
 
     // Удаление сохранённого кода
     async function deleteCode(fileName) {
-        const confirmed = confirm(`Вы уверены, что хотите удалить ${fileName}?`);
-        if (!confirmed) return;
-
+        // Удаление происходит без подтверждения
         const response = await fetch(`/api/code/${fileName}`, { method: "DELETE" });
         const result = await response.text();
         alert(result);
-        loadSavedCodes();
-        document.getElementById("codeContent").textContent = '';
-        document.getElementById("selectedFileName").textContent = '';
-    }
-
-    // Выполнение сохранённого кода
-    async function executeSavedCode(fileName) {
-        const response = await fetch(`/api/execute/${fileName}`);
-        const result = await response.text();
-        document.getElementById("output").innerText = result;
+        await loadSavedCodes();
     }
 
     // Загрузка списка сохранённых кодов при загрузке страницы
