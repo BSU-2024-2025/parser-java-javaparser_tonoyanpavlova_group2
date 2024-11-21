@@ -1,0 +1,42 @@
+[33mcommit cdd4f29cdc0741e8703822f5e6331c3ebe7a6bce[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m
+Merge: 2609eb6 31a44ad
+Author: tanna18 <anyuta.tonojan@gmail.com>
+Date:   Thu Nov 21 19:05:08 2024 +0300
+
+    Merge branch 'main' of https://github.com/BSU-2024-2025/parser-java-javaparser_tonoyanpavlova_group2
+
+[33mcommit 2609eb6f2ce87f7357b97bdb81ec35294803dd1a[m
+Author: tanna18 <anyuta.tonojan@gmail.com>
+Date:   Thu Nov 21 18:41:06 2024 +0300
+
+    add stack
+
+[33mcommit 31a44ad7dae71adb32237f9478b633cf1825939c[m
+Author: Darya Pavlova <134142114+Filleeona@users.noreply.github.com>
+Date:   Tue Nov 19 12:33:34 2024 +0300
+
+    Initial commit
+
+[33mcommit d778c7ff448b924755cafe55dff73dcb15f723d7[m
+Author: tanna18 <anyuta.tonojan@gmail.com>
+Date:   Tue Nov 12 13:59:03 2024 +0300
+
+    add all files
+
+[33mcommit f165a074be180b0ff6af4333058cb12b758d08af[m
+Author: tanna18 <anyuta.tonojan@gmail.com>
+Date:   Tue Nov 12 13:49:35 2024 +0300
+
+    add all files
+
+[33mcommit 6e7a2b62277184f59e382ad904e74b429019bcb0[m
+Author: tanna18 <anyuta.tonojan@gmail.com>
+Date:   Tue Oct 29 14:07:17 2024 +0300
+
+    function add run delete
+
+[33mcommit 445f221641d6a9324216eeb139734e5333780758[m
+Author: tanna18 <anyuta.tonojan@gmail.com>
+Date:   Fri Oct 25 22:46:25 2024 +0300
+
+    add start files
