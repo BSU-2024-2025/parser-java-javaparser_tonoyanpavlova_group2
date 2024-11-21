@@ -55,21 +55,71 @@ public class CodeController {
 
         return output.toString();
     }
+    //стек
     private int evaluateExpression(String expression) {
         // Подстановка значений переменных в выражение
         for (Map.Entry<String, Integer> entry : variables.entrySet()) {
             expression = expression.replace(entry.getKey(), entry.getValue().toString());
         }
 
-        // Вычисление выражения (здесь можно использовать сторонние библиотеки, например, JEXL или ScriptEngine)
-        // Для простоты сейчас допустим, что выражения имеют только "+" и целые числа
-        String[] terms = expression.split("\\+");
-        int result = 0;
-        for (String term : terms) {
-            result += Integer.parseInt(term.trim());
+        // Поддержка операций с приоритетом с использованием стека
+        Stack<Integer> values = new Stack<>();
+        Stack<Character> operators = new Stack<>();
+
+        int i = 0;
+        while (i < expression.length()) {
+            char c = expression.charAt(i);
+
+            if (Character.isDigit(c)) {
+                // Считывание числа
+                StringBuilder sb = new StringBuilder();
+                while (i < expression.length() && Character.isDigit(expression.charAt(i))) {
+                    sb.append(expression.charAt(i++));
+                }
+                values.push(Integer.parseInt(sb.toString()));
+                continue;
+            } else if (c == '+' || c == '-' || c == '*' || c == '/') {
+                // Обработка операций
+                while (!operators.isEmpty() && hasPrecedence(c, operators.peek())) {
+                    values.push(applyOperator(operators.pop(), values.pop(), values.pop()));
+                }
+                operators.push(c);
+            }
+            i++;
         }
-        return result;
+
+        // Выполнение оставшихся операций
+        while (!operators.isEmpty()) {
+            values.push(applyOperator(operators.pop(), values.pop(), values.pop()));
+        }
+
+        return values.pop();
     }
+
+    private boolean hasPrecedence(char op1, char op2) {
+        if ((op1 == '*' || op1 == '/') && (op2 == '+' || op2 == '-')) {
+            return false;
+        }
+        return true;
+    }
+
+    private int applyOperator(char operator, int b, int a) {
+        switch (operator) {
+            case '+':
+                return a + b;
+            case '-':
+                return a - b;
+            case '*':
+                return a * b;
+            case '/':
+                if (b == 0) {
+                    throw new ArithmeticException("Division by zero");
+                }
+                return a / b;
+        }
+        throw new UnsupportedOperationException("Unsupported operator: " + operator);
+    }
+
 
     @PostMapping("/save")
     public String saveCode(@RequestBody Map<String, String> payload) {
